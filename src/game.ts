@@ -51,8 +51,10 @@ export class Game {
         try {
           this.board.place(parsedInput, this.board.nextPlayer);
           this.board.print();
-          if (this.checkIfPlayerWon(nextPlayer)) {
+          if (this.playerHasWon(nextPlayer)) {
             console.log(`Player ${nextPlayer} won`);
+          } else if (this.gameIsDraw()) {
+            console.log("The game ended in a draw");
           } else {
             this.promptTurn();
           }
@@ -74,7 +76,7 @@ export class Game {
       .catch(handleInputError);
   }
 
-  private checkIfPlayerWon(player: 1 | 2) {
+  private playerHasWon(player: 1 | 2) {
     const playerToken = (player === 1 ? Token.X : Token.O).valueOf();
 
     // check columns
@@ -125,5 +127,20 @@ export class Game {
     }
 
     return false;
+  }
+
+  private gameIsDraw() {
+    const emptyToken = Token.Null.valueOf();
+
+    for (let row = 0; row < this.board.height; row++) {
+      for (let col = 0; col < this.board.width; col++) {
+        const boardToken =
+          this.board.getTokenAtPosition({ row, col }).valueOf();
+
+        if (boardToken === emptyToken) return false;
+      }
+    }
+
+    return true;
   }
 }
