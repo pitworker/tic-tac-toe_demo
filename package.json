@@ -1,0 +1,16 @@
+{
+  "name": "recurse-tictactoe",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "author": "pitworker",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "yarn run build && yarn run start"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "typescript": "^5.8.2"
+  }
+}
