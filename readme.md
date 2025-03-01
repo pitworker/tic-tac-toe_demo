@@ -16,4 +16,4 @@ To build and run: `yarn dev`
 
 ## Node Version
 
-This app was tested in Node version 22.11.0 and Yarn version 1.22.19
+This app was tested in Node version `22.11.0` and Yarn version `1.22.19`
