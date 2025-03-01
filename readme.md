@@ -4,7 +4,7 @@ This is a game of Tic-Tac-Toe implemented in TypeScript that runs on the command
 
 ## To Play
 
-Each player takes turns inputting the coordinates to place their tokens. Columns are labelled with letters A to C, and rows are labelled with numbers 1 to 3. Input parsing is not case or order sensitive. To place a token in column A and row 3, for example, the player may input `A3`, `a3`, `3A`, or `3a`.
+Each player takes turns inputting the coordinates to place their tokens. Columns are labelled with letters A to C, and rows are labelled with numbers 1 to 3. Input parsing is not case or order sensitive and ignores whitespace. To place a token in column A and row 3, for example, the player could input `A3`, `a3`, `3A`, `3a`, or `3    a`.
 
 ## Build and Run Scripts
 
