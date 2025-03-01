@@ -1,0 +1,27 @@
+import { Token } from "./token";
+import { Board } from "./board";
+import { Terminal } from "./terminal";
+
+export class Game {
+  private board: Board;
+  private terminal: Terminal;
+
+  constructor() {
+    this.terminal = new Terminal();
+    this.board = new Board();
+  }
+
+  start() {
+    this.
+  }
+
+  private promptTurn() {
+    const nextPlayer = this.board.nextPlayer.valueOf() === Token.X ? 1 : 2;
+    const prompt = `Player ${nextPlayer}, place your token`;
+    this.terminal.question(prompt).then(userInput => {
+
+    }).catch(err => {
+
+    });
+  }
+}

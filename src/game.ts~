@@ -1,0 +1,117 @@
+import { Token } from "./token";
+import { Board } from "./board";
+import { Terminal } from "./terminal";
+
+const parseInput = (inputRaw: string) => {
+  const input = inputRaw.replace(/\s+/g, "").toLowerCase();
+
+  const col = input.includes("a") ? 0 :
+    input.includes("b") ? 1 :
+      input.includes("c") ? 2 :
+        -1;
+
+  const row = input.includes("1") ? 0 :
+    input.includes("2") ? 1 :
+      input.includes("3") ? 2 :
+        -1;
+
+  if (input.length === 2 && row >= 0 && row >= 0) {
+    return { row, col };
+  } else {
+    return undefined;
+  }
+};
+
+export class Game {
+  private board: Board;
+  private terminal: Terminal;
+
+  constructor() {
+    this.terminal = new Terminal();
+    this.board = new Board();
+  }
+
+  start() {
+    this.board.print();
+    this.promptTurn();
+  }
+
+  private promptError() {
+    console.log("Invalid placement. Please try again.");
+    this.promptTurn();
+  }
+
+  private promptTurn() {
+    const nextPlayer = this.board.nextPlayer.valueOf() === Token.X ? 1 : 2;
+    const prompt = `Player ${nextPlayer}, place your token\n`;
+
+    const handleUserInput = (userInput: string) => {
+      const parsedInput = parseInput(userInput);
+      if (parsedInput) {
+        try {
+          this.board.place(parsedInput, this.board.nextPlayer);
+          this.board.print();
+          if (this.checkIfPlayerWon(nextPlayer)) {
+            console.log(`Player ${nextPlayer} won`);
+          } else {
+            this.promptTurn();
+          }
+        } catch (err) {
+          this.promptError();
+        }
+      } else {
+        this.promptError();
+      }
+    };
+
+    const handleInputError = (_err: any) => {
+      this.promptError();
+    };
+
+    this.terminal
+      .question(prompt)
+      .then(handleUserInput)
+      .catch(handleInputError);
+  }
+
+  private checkIfPlayerWon(player: 1 | 2) {
+    const playerToken = player === 1 ? Token.X : Token.O;
+
+    // check columns
+    for (let col = 0; col < this.board.width; col++) {
+      let playerHasCol = true;
+      for (let row = 0; row < this.board.height; row++) {
+        const boardToken = this.board.getTokenAtPosition({ row, col });
+        if (boardToken.valueOf() !== playerToken.valueOf()) {
+          playerHasCol = false;
+        }
+      }
+      if (playerHasCol) return true;
+    }
+
+    // check rows
+    for (let row = 0; row < this.board.height; row++) {
+      let playerHasRow = true;
+      for (let col = 0; col < this.board.width; col++) {
+        const boardToken = this.board.getTokenAtPosition({ row, col });
+        if (boardToken.valueOf() !== playerToken.valueOf()) {
+          playerHasRow = false;
+        }
+      }
+      if (playerHasRow) return true;
+    }
+
+    // check diagonals
+    if (this.board.getTokenAtPosition({ row: 1, col: 1 }) && ((
+      this.board.getTokenAtPosition({ row: 0, col: 0 }) &&
+      this.board.getTokenAtPosition({ row: 2, col: 2 })
+    ) || (
+        this.board.getTokenAtPosition({ row: 0, col: 2 }) &&
+        this.board.getTokenAtPosition({ row: 2, col: 0 })
+      ))) {
+      return true;
+    }
+
+    return false;
+  }
+}
