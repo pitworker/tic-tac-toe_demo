@@ -84,13 +84,13 @@ export class Board {
     this.turn = newTurn;
   }
 
-  tokenIsInRow(token: Token.X | Token.Y) {
+  tokenIsInRow(token: Token.X | Token.O) {
     const playerToken = token.valueOf();
 
     // check columns
-    for (let col = 0; col < this.board.width; col++) {
+    for (let col = 0; col < this.width; col++) {
       let playerHasCol = true;
-      for (let row = 0; row < this.board.height; row++) {
+      for (let row = 0; row < this.height; row++) {
         const boardToken =
           this.getTokenAtPosition({ row, col }).valueOf();
         if (boardToken !== playerToken) {
@@ -101,9 +101,9 @@ export class Board {
     }
 
     // check rows
-    for (let row = 0; row < this.board.height; row++) {
+    for (let row = 0; row < this.height; row++) {
       let playerHasRow = true;
-      for (let col = 0; col < this.board.width; col++) {
+      for (let col = 0; col < this.width; col++) {
         const boardToken =
           this.getTokenAtPosition({ row, col }).valueOf();
         if (boardToken !== playerToken) {
@@ -140,8 +140,8 @@ export class Board {
   isFull() {
     const emptyToken = Token.Null.valueOf();
 
-    for (let row = 0; row < this.board.height; row++) {
-      for (let col = 0; col < this.board.width; col++) {
+    for (let row = 0; row < this.height; row++) {
+      for (let col = 0; col < this.width; col++) {
         const boardToken =
           this.getTokenAtPosition({ row, col }).valueOf();
 

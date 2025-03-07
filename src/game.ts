@@ -1,4 +1,5 @@
 import { Token } from "./token";
+import { EndState } from "./end-state";
 import { Board } from "./board";
 import { Terminal } from "./terminal";
 
@@ -51,9 +52,21 @@ export class Game {
         try {
           this.board.place(parsedInput, this.board.nextPlayer);
           this.board.print();
-          if (this.playerHasWon(nextPlayer)) {
+
+          const gameStatus = this.getStatus();
+          const nextPlayerWon = nextPlayer === 1 ?
+            EndState.Player1Won.valueOf() :
+            EndState.Player2Won.valueOf();
+
+          if (
+            gameStatus.isOver &&
+            gameStatus.endState.valueOf() === nextPlayerWon
+          ) {
             console.log(`Player ${nextPlayer} won`);
-          } else if (this.gameIsDraw()) {
+          } else if (
+            gameStatus.isOver &&
+            gameStatus.endState.valueOf() === EndState.PlayersTied.valueOf()
+          ) {
             console.log("The game ended in a draw");
           } else {
             this.promptTurn();
@@ -76,6 +89,31 @@ export class Game {
       .catch(handleInputError);
   }
 
+  getStatus() {
+    if (this.board.tokenIsInRow(Token.X)) {
+      return {
+        isOver: true,
+        endState: EndState.Player1Won
+      };
+    } else if (this.board.tokenIsInRow(Token.O)) {
+      return {
+        isOver: true,
+        endState: EndState.Player2Won
+      };
+    } else if (this.board.isFull()) {
+      return {
+        isOver: true,
+        endState: EndState.PlayersTied
+      };
+    }
+
+    return {
+      isOver: false,
+      endState: EndState.Unfinished
+    };
+  }
+
+  /*
   private playerHasWon(player: 1 | 2) {
     const playerToken = (player === 1 ? Token.X : Token.O).valueOf();
 
@@ -143,4 +181,5 @@ export class Game {
 
     return true;
   }
+  */
 }
