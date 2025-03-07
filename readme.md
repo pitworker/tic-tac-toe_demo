@@ -20,8 +20,8 @@ This app was tested in Node version `22.11.0` and Yarn version `1.22.19`
 
 ## TODO
 
-1. Add a simple AI (random placement) that can act as player 2
+1. Add a simple AI (random placement) that can act as player 2 [COMPLETE]
 
-2. Add option to select 1 or 2 player mode
+2. Add option to select 1 or 2 player mode [COMPLETE]
 
 3. Improve the AI (minimax)
