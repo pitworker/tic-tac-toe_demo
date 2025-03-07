@@ -2,6 +2,7 @@ import { Token } from "./token";
 import { EndState } from "./end-state";
 import { Board } from "./board";
 import { Terminal } from "./terminal";
+import { AI } from "./ai";
 
 const parseInput = (inputRaw: string) => {
   const input = inputRaw.replace(/\s+/g, "").toLowerCase();
@@ -23,23 +24,77 @@ const parseInput = (inputRaw: string) => {
   }
 };
 
+const parseMode = (inputRaw: string) => {
+  const input = inputRaw.replace(/\s+/g, "").toLowerCase();
+
+  if (input === "1") return 1;
+  else if (input === "2") return 2;
+  else if (input === "one") return 1;
+  else if (input === "two") return 2;
+
+  return NaN;
+}
+
 export class Game {
   private board: Board;
   private terminal: Terminal;
+  private ai: AI;
+  private playerMode: number = NaN;
 
   constructor() {
     this.terminal = new Terminal();
     this.board = new Board();
+    this.ai = new AI(this.board);
   }
 
   start() {
-    this.board.print();
-    this.promptTurn();
+    this.promptMode();
+  }
+
+  private promptMode() {
+    const handleUserInput = (userInput: string) => {
+      const parsedInput = parseMode(userInput);
+
+      if (!isNaN(parsedInput)) {
+        this.playerMode = parsedInput;
+        this.board.print();
+        this.promptTurn();
+      } else {
+        this.promptModeError();
+      }
+    }
+
+    const handleInputError = (_err: any) => {
+      this.promptModeError();
+    };
+
+    this.terminal
+      .question("How many players?\n")
+      .then(handleUserInput)
+      .catch(handleInputError);
+  }
+
+  private promptModeError() {
+    console.log("Invalid number of players. Please enter 1 or 2.");
+    this.promptMode();
   }
 
   private promptError() {
     console.log("Invalid placement. Please try again.");
     this.promptTurn();
+  }
+
+  private nextTurn() {
+    const nextPlayer = this.board.nextPlayer.valueOf() === Token.X ? 1 : 2;
+
+    if (this.playerMode === 1 && nextPlayer === 2) {
+      console.log("AI is placing token...");
+      this.ai.place(Token.O);
+      this.board.print();
+      if (!this.handleGameOver(nextPlayer)) this.nextTurn();
+    } else {
+      this.promptTurn();
+    }
   }
 
   private promptTurn() {
@@ -53,24 +108,7 @@ export class Game {
           this.board.place(parsedInput, this.board.nextPlayer);
           this.board.print();
 
-          const gameStatus = this.getStatus();
-          const nextPlayerWon = nextPlayer === 1 ?
-            EndState.Player1Won.valueOf() :
-            EndState.Player2Won.valueOf();
-
-          if (
-            gameStatus.isOver &&
-            gameStatus.endState.valueOf() === nextPlayerWon
-          ) {
-            console.log(`Player ${nextPlayer} won`);
-          } else if (
-            gameStatus.isOver &&
-            gameStatus.endState.valueOf() === EndState.PlayersTied.valueOf()
-          ) {
-            console.log("The game ended in a draw");
-          } else {
-            this.promptTurn();
-          }
+          if (!this.handleGameOver(nextPlayer)) this.nextTurn();
         } catch (err) {
           this.promptError();
         }
@@ -87,6 +125,29 @@ export class Game {
       .question(prompt)
       .then(handleUserInput)
       .catch(handleInputError);
+  }
+
+  private handleGameOver(nextPlayer: 1 | 2) {
+    const gameStatus = this.getStatus();
+    const nextPlayerWon = nextPlayer === 1 ?
+      EndState.Player1Won.valueOf() :
+      EndState.Player2Won.valueOf();
+
+    if (
+      gameStatus.isOver &&
+      gameStatus.endState.valueOf() === nextPlayerWon
+    ) {
+      console.log(`Player ${nextPlayer} won`);
+    } else if (
+      gameStatus.isOver &&
+      gameStatus.endState.valueOf() === EndState.PlayersTied.valueOf()
+    ) {
+      console.log("The game ended in a draw");
+    } else {
+      return false;
+    }
+
+    return true;
   }
 
   getStatus() {
@@ -112,74 +173,4 @@ export class Game {
       endState: EndState.Unfinished
     };
   }
-
-  /*
-  private playerHasWon(player: 1 | 2) {
-    const playerToken = (player === 1 ? Token.X : Token.O).valueOf();
-
-    // check columns
-    for (let col = 0; col < this.board.width; col++) {
-      let playerHasCol = true;
-      for (let row = 0; row < this.board.height; row++) {
-        const boardToken =
-          this.board.getTokenAtPosition({ row, col }).valueOf();
-        if (boardToken !== playerToken) {
-          playerHasCol = false;
-        }
-      }
-      if (playerHasCol) return true;
-    }
-
-    // check rows
-    for (let row = 0; row < this.board.height; row++) {
-      let playerHasRow = true;
-      for (let col = 0; col < this.board.width; col++) {
-        const boardToken =
-          this.board.getTokenAtPosition({ row, col }).valueOf();
-        if (boardToken !== playerToken) {
-          playerHasRow = false;
-        }
-      }
-      if (playerHasRow) return true;
-    }
-
-    // check diagonals
-    const diagTokens = {
-      center: this.board.getTokenAtPosition({ row: 1, col: 1 }).valueOf(),
-      topLeft: this.board.getTokenAtPosition({ row: 0, col: 0 }).valueOf(),
-      topRight: this.board.getTokenAtPosition({ row: 0, col: 2 }).valueOf(),
-      bottomLeft: this.board.getTokenAtPosition({ row: 2, col: 0 }).valueOf(),
-      bottomRight: this.board.getTokenAtPosition({ row: 2, col: 2 }).valueOf()
-    };
-
-    if (diagTokens.center === playerToken && (
-      (
-        diagTokens.topLeft === playerToken &&
-        diagTokens.bottomRight === playerToken
-      ) || (
-        diagTokens.topRight === playerToken &&
-        diagTokens.bottomLeft === playerToken
-      )
-    )) {
-      return true;
-    }
-
-    return false;
-  }
-
-  private gameIsDraw() {
-    const emptyToken = Token.Null.valueOf();
-
-    for (let row = 0; row < this.board.height; row++) {
-      for (let col = 0; col < this.board.width; col++) {
-        const boardToken =
-          this.board.getTokenAtPosition({ row, col }).valueOf();
-
-        if (boardToken === emptyToken) return false;
-      }
-    }
-
-    return true;
-  }
-  */
 }
