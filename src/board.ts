@@ -84,6 +84,74 @@ export class Board {
     this.turn = newTurn;
   }
 
+  tokenIsInRow(token: Token.X | Token.Y) {
+    const playerToken = token.valueOf();
+
+    // check columns
+    for (let col = 0; col < this.board.width; col++) {
+      let playerHasCol = true;
+      for (let row = 0; row < this.board.height; row++) {
+        const boardToken =
+          this.getTokenAtPosition({ row, col }).valueOf();
+        if (boardToken !== playerToken) {
+          playerHasCol = false;
+        }
+      }
+      if (playerHasCol) return true;
+    }
+
+    // check rows
+    for (let row = 0; row < this.board.height; row++) {
+      let playerHasRow = true;
+      for (let col = 0; col < this.board.width; col++) {
+        const boardToken =
+          this.getTokenAtPosition({ row, col }).valueOf();
+        if (boardToken !== playerToken) {
+          playerHasRow = false;
+        }
+      }
+      if (playerHasRow) return true;
+    }
+
+    // check diagonals
+    const diagTokens = {
+      center: this.getTokenAtPosition({ row: 1, col: 1 }).valueOf(),
+      topLeft: this.getTokenAtPosition({ row: 0, col: 0 }).valueOf(),
+      topRight: this.getTokenAtPosition({ row: 0, col: 2 }).valueOf(),
+      bottomLeft: this.getTokenAtPosition({ row: 2, col: 0 }).valueOf(),
+      bottomRight: this.getTokenAtPosition({ row: 2, col: 2 }).valueOf()
+    };
+
+    if (diagTokens.center === playerToken && (
+      (
+        diagTokens.topLeft === playerToken &&
+        diagTokens.bottomRight === playerToken
+      ) || (
+        diagTokens.topRight === playerToken &&
+        diagTokens.bottomLeft === playerToken
+      )
+    )) {
+      return true;
+    }
+
+    return false;
+  }
+
+  isFull() {
+    const emptyToken = Token.Null.valueOf();
+
+    for (let row = 0; row < this.board.height; row++) {
+      for (let col = 0; col < this.board.width; col++) {
+        const boardToken =
+          this.getTokenAtPosition({ row, col }).valueOf();
+
+        if (boardToken === emptyToken) return false;
+      }
+    }
+
+    return true;
+  }
+
   get width() {
     return this.boardSize;
   }
